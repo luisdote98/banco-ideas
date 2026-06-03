@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   X, Inbox, Lightbulb, FolderOpen, LayoutDashboard,
   Rocket, ArrowRight, Briefcase, Code2, Palette, Megaphone,
-  Plane, Newspaper, Target, FlaskConical, BookOpen,
+  Plane, Newspaper, Target, FlaskConical, BookOpen, LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,9 +27,10 @@ type Props = {
   onClose: () => void;
   categories: Category[];
   inboxCount: number;
+  onLogout?: () => void;
 };
 
-export function MobileDrawer({ open, onClose, categories, inboxCount }: Props) {
+export function MobileDrawer({ open, onClose, categories, inboxCount, onLogout }: Props) {
   const pathname = usePathname();
 
   // Close on route change
@@ -124,6 +125,16 @@ export function MobileDrawer({ open, onClose, categories, inboxCount }: Props) {
             </div>
           )}
         </nav>
+        {/* Logout */}
+        <div className="p-3 border-t border-border mt-2">
+          <button
+            onClick={onLogout}
+            className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm text-muted-foreground active:bg-accent transition-colors"
+          >
+            <LogOut className="w-5 h-5 shrink-0" />
+            Cerrar sesión
+          </button>
+        </div>
       </div>
     </>
   );

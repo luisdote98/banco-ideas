@@ -1,8 +1,9 @@
 "use client";
 
-import { Moon, Sun, Zap, Search, Menu } from "lucide-react";
+import { Moon, Sun, Zap, Search, Menu, LogOut } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { CommandPalette } from "./CommandPalette";
 import { MobileDrawer } from "./MobileDrawer";
@@ -20,10 +21,17 @@ type Props = {
 
 export function Header({ inboxCount = 0, categories = [] }: Props) {
   const { theme, setTheme } = useTheme();
+  const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const triggerSearch = () => setSearchOpen(true);
+
+  const handleLogout = async () => {
+    await fetch("/api/auth", { method: "DELETE" });
+    router.push("/login");
+    router.refresh();
+  };
 
   return (
     <>
@@ -33,6 +41,7 @@ export function Header({ inboxCount = 0, categories = [] }: Props) {
         onClose={() => setDrawerOpen(false)}
         categories={categories}
         inboxCount={inboxCount}
+        onLogout={handleLogout}
       />
 
       <header className="h-12 border-b border-border px-3 md:px-4 flex items-center justify-between flex-shrink-0 bg-background/95 backdrop-blur-md sticky top-0 z-40">
@@ -84,6 +93,17 @@ export function Header({ inboxCount = 0, categories = [] }: Props) {
           >
             <Sun className="w-4 h-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute w-4 h-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          </Button>
+
+          {/* Logout — desktop only (mobile has it in drawer) */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hidden md:flex w-8 h-8 text-muted-foreground hover:text-foreground"
+            onClick={handleLogout}
+            title="Cerrar sesión"
+          >
+            <LogOut className="w-4 h-4" />
           </Button>
         </div>
       </header>
