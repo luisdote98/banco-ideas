@@ -29,6 +29,9 @@ model Idea {
 
   status String @default("DRAFT")
 
+  // Imagen adjunta (URL de Vercel Blob)
+  imageUrl String?
+
   // AI-ready fields (populated later)
   aiSummary       String?
   aiSuggestedTags String?   // JSON array string

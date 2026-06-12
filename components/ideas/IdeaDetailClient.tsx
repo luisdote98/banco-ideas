@@ -23,6 +23,7 @@ import { TagPill } from "@/components/shared/TagPill";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { scoreCompuesto, formatDate, cn } from "@/lib/utils";
 import { IdeaHistoryTimeline } from "@/components/ideas/IdeaHistory";
+import { ImageUpload } from "@/components/shared/ImageUpload";
 import type { Category, IdeaHistory } from "@/types";
 
 type IdeaFull = {
@@ -41,6 +42,7 @@ type IdeaFull = {
   category: Category | null;
   tags: { tag: { id: string; name: string; slug: string; color: string | null } }[];
   history?: IdeaHistory[];
+  imageUrl?: string | null;
 };
 
 type Props = {
@@ -65,6 +67,7 @@ export function IdeaDetailClient({ idea, categories }: Props) {
     scoreEffort: idea.scoreEffort,
     scoreInterest: idea.scoreInterest,
     tags: idea.tags.map((t) => t.tag.name),
+    imageUrl: idea.imageUrl ?? null,
   });
 
   const [editingField, setEditingField] = useState<EditableField>(null);
@@ -275,6 +278,18 @@ export function IdeaDetailClient({ idea, categories }: Props) {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Image */}
+          <div className="space-y-1.5">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Imagen</p>
+            <ImageUpload
+              value={data.imageUrl}
+              onChange={(url) => {
+                setData((d) => ({ ...d, imageUrl: url }));
+                patch({ imageUrl: url });
+              }}
+            />
           </div>
 
           {/* Tags */}

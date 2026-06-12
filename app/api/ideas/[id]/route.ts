@@ -49,7 +49,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const body = await req.json();
   const {
     title, description, nextStep, categoryId, status, type,
-    scorePotential, scoreEffort, scoreInterest, tags,
+    scorePotential, scoreEffort, scoreInterest, tags, imageUrl,
   } = body;
 
   const existing = await prisma.idea.findUnique({ where: { id } });
@@ -76,6 +76,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (scorePotential !== undefined) data.scorePotential = clamp(scorePotential);
   if (scoreEffort !== undefined) data.scoreEffort = clamp(scoreEffort);
   if (scoreInterest !== undefined) data.scoreInterest = clamp(scoreInterest);
+  if (imageUrl !== undefined) data.imageUrl = imageUrl;
 
   // Record history before updating
   await recordHistory(id, existing as Record<string, unknown>, data);

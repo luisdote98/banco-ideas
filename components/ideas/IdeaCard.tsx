@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Star, Rocket, Archive, Zap, RotateCcw, Loader2 } from "lucide-react";
+import { Star, Rocket, Archive, Zap, RotateCcw, Loader2, ImageIcon } from "lucide-react";
+import Image from "next/image";
 import { cn, scoreCompuesto, timeAgo } from "@/lib/utils";
 import { TagPill } from "@/components/shared/TagPill";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -53,12 +54,25 @@ export function IdeaCard({ idea, showQuickActions = false }: Props) {
         href={`/ideas/${idea.id}`}
         className={cn(
           "flex flex-col rounded-xl border border-border bg-card transition-all duration-150 active:scale-[0.99]",
-          // Mobile: compact padding. Desktop: more spacious
-          "p-4 md:p-5",
-          "gap-2.5 md:gap-3",
-          "hover:border-primary/40 hover:shadow-sm"
+          "hover:border-primary/40 hover:shadow-sm",
+          "overflow-hidden"
         )}
       >
+        {/* Image thumbnail */}
+        {idea.imageUrl && (
+          <div className="relative w-full h-36 bg-muted">
+            <Image
+              src={idea.imageUrl}
+              alt={idea.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 400px"
+            />
+          </div>
+        )}
+
+        <div className={cn("flex flex-col gap-2.5 md:gap-3", "p-4 md:p-5")}>
+
         {/* Title row */}
         <div className="flex items-start gap-2 min-w-0">
           {isProject && <Rocket className="w-3.5 h-3.5 text-violet-500 shrink-0 mt-0.5" />}
@@ -119,7 +133,9 @@ export function IdeaCard({ idea, showQuickActions = false }: Props) {
             </div>
             <span className="text-xs text-muted-foreground/60 tabular-nums">{timeAgo(idea.createdAt)}</span>
           </div>
-        </div>
+        </div> {/* end bottom row */}
+
+        </div> {/* end inner padding div */}
       </Link>
 
       {/* Quick actions — on desktop: hover. On mobile: always visible small buttons */}
