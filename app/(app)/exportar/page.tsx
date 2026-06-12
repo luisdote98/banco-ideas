@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { ExportClient } from "@/components/ideas/ExportClient";
+import { ExportImportClient } from "@/components/ideas/ExportImportClient";
 
 export default async function ExportarPage() {
   const now = new Date();
@@ -19,5 +19,5 @@ export default async function ExportarPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  return <ExportClient ideas={ideas} />;
+  return <ExportImportClient ideas={ideas} />;
 }
