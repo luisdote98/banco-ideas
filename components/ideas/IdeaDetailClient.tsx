@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Star, MapPin, Calendar, ChevronDown, ChevronUp,
-  Loader2, Trash2, Archive, RotateCcw, Check, X, Rocket,
+  Loader2, Trash2, Archive, RotateCcw, Check, X, Rocket, ZoomIn,
 } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -71,6 +72,7 @@ export function IdeaDetailClient({ idea, categories }: Props) {
   });
 
   const [editingField, setEditingField] = useState<EditableField>(null);
+  const [lightbox, setLightbox] = useState(false);
   const [draft, setDraft] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(
     // Auto-expand if any advanced field is filled
@@ -241,6 +243,53 @@ export function IdeaDetailClient({ idea, categories }: Props) {
           </div>
         )}
       </div>
+
+      {/* ── Imagen visible ────────────────────────────────── */}
+      {data.imageUrl && (
+        <>
+          {/* Lightbox */}
+          {lightbox && (
+            <div
+              className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+              onClick={() => setLightbox(false)}
+            >
+              <button
+                className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+                onClick={() => setLightbox(false)}
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <Image
+                src={data.imageUrl}
+                alt={data.title}
+                width={1200}
+                height={900}
+                className="max-w-full max-h-[90vh] object-contain rounded-lg"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          )}
+
+          {/* Miniatura clicable */}
+          <div
+            className="relative rounded-xl overflow-hidden border border-border cursor-zoom-in group"
+            onClick={() => setLightbox(true)}
+          >
+            <Image
+              src={data.imageUrl}
+              alt={data.title}
+              width={800}
+              height={500}
+              className="w-full max-h-72 object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+            />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded-full p-2">
+                <ZoomIn className="w-5 h-5 text-white" />
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* ── Advanced toggle ────────────────────────────────── */}
       <button
