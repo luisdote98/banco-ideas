@@ -107,7 +107,8 @@ export function ExportImportClient({ ideas }: Props) {
       return next;
     });
     try {
-      const res = await fetch("/api/ideas", {
+      // Usar endpoint de import que actualiza la original si existe
+      const res = await fetch("/api/ideas/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -115,11 +116,6 @@ export function ExportImportClient({ ideas }: Props) {
           description: idea.description || null,
           nextStep: idea.nextStep || null,
           status: idea.status || "DRAFT",
-          scorePotential: 5,
-          scoreEffort: 5,
-          scoreInterest: 5,
-          tags: [],
-          aiImproved: true,
         }),
       });
 
@@ -128,11 +124,16 @@ export function ExportImportClient({ ideas }: Props) {
         throw new Error(data.error ?? `Error ${res.status}`);
       }
 
+      const { action } = await res.json();
       setSaveStatuses((prev) => {
         const next = [...prev];
         next[index] = "saved";
         return next;
       });
+      // Mostrar si actualizó la original o creó una nueva
+      if (action === "updated") {
+        toast.success(`Idea ${index + 1} actualizada ✓`);
+      }
       return true;
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Error desconocido";
@@ -157,7 +158,7 @@ export function ExportImportClient({ ideas }: Props) {
     }
     if (savedAny) {
       setAllSaved(true);
-      toast.success("Ideas guardadas en el Inbox ✓");
+      toast.success("Ideas guardadas. No volverán a aparecer en el exportador ✓");
       router.refresh();
     }
   };
