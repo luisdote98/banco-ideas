@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   X, Inbox, Lightbulb, FolderOpen, LayoutDashboard,
   Rocket, ArrowRight, Briefcase, Code2, Palette, Megaphone,
-  Plane, Newspaper, Target, FlaskConical, BookOpen, LogOut,
+  Plane, Newspaper, Target, FlaskConical, BookOpen, LogOut, Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -100,6 +100,7 @@ export function MobileDrawer({ open, onClose, categories, inboxCount, onLogout }
           {navItem("/acciones", ArrowRight, "Acciones pendientes")}
           {navItem("/proyectos", Rocket, "Proyectos")}
           {navItem("/ideas", Lightbulb, "Todas las ideas")}
+          {navItem("/exportar", Sparkles, "Exportar a IA")}
           {navItem("/categorias", FolderOpen, "Categorías")}
           {navItem("/dashboard", LayoutDashboard, "Dashboard")}
 
