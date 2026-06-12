@@ -4,15 +4,16 @@ import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, ArrowRight } from "lucide-react";
+import { ImageUpload } from "@/components/shared/ImageUpload";
 
 export function QuickCapture() {
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    // Small delay so keyboard doesn't obscure the field on mobile
     const t = setTimeout(() => textareaRef.current?.focus(), 100);
     return () => clearTimeout(t);
   }, []);
@@ -32,7 +33,11 @@ export function QuickCapture() {
 
   const save = async () => {
     const trimmed = title.trim();
-    if (!trimmed) { textareaRef.current?.focus(); return; }
+    // Permite guardar solo con imagen aunque no haya título
+    if (!trimmed && !imageUrl) {
+      textareaRef.current?.focus();
+      return;
+    }
 
     setLoading(true);
     try {
@@ -40,12 +45,13 @@ export function QuickCapture() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: trimmed,
+          title: trimmed || "Sin título",
           status: "DRAFT",
           scorePotential: 5,
           scoreEffort: 5,
           scoreInterest: 5,
           tags: [],
+          imageUrl: imageUrl ?? undefined,
         }),
       });
       if (!res.ok) throw new Error();
@@ -59,24 +65,22 @@ export function QuickCapture() {
     }
   };
 
-  const isValid = title.trim().length > 0;
+  const isValid = title.trim().length > 0 || imageUrl !== null;
   const charCount = title.length;
 
   return (
-    // Mobile: full height, no centering — textarea at top so keyboard doesn't hide it
-    // Desktop: centered layout
     <div className="flex flex-col md:items-center md:justify-center min-h-full px-4 pt-6 pb-4 md:px-6 md:py-16">
-      <div className="w-full max-w-xl space-y-4 md:space-y-6">
+      <div className="w-full max-w-xl space-y-4 md:space-y-5">
 
-        {/* Header — compact on mobile */}
+        {/* Header */}
         <div className="space-y-0.5 md:text-center md:space-y-1">
           <h1 className="text-xl font-semibold tracking-tight">¿Qué idea tienes?</h1>
           <p className="text-sm text-muted-foreground">
-            Escríbela. Los detalles después.
+            Escribe, haz una foto o ambas.
           </p>
         </div>
 
-        {/* Input card */}
+        {/* Textarea card */}
         <div className="relative rounded-2xl border border-border bg-card shadow-sm focus-within:border-primary/60 focus-within:shadow-md transition-all duration-200">
           <textarea
             ref={textareaRef}
@@ -84,7 +88,6 @@ export function QuickCapture() {
             onChange={handleInput}
             onKeyDown={handleKeyDown}
             placeholder="Describe tu idea en una frase..."
-            // Mobile: min 3 rows. Desktop: 3 rows
             rows={3}
             maxLength={200}
             className="w-full resize-none rounded-2xl bg-transparent px-4 pt-4 pb-12 text-base md:text-lg leading-relaxed placeholder:text-muted-foreground/40 focus:outline-none"
@@ -113,9 +116,11 @@ export function QuickCapture() {
           </div>
         </div>
 
-        {/* Hint — compact on mobile */}
+        {/* Image upload — prominente, especialmente en móvil */}
+        <ImageUpload value={imageUrl} onChange={setImageUrl} />
+
         <p className="text-xs text-muted-foreground/50 md:text-center">
-          Se guarda como borrador · Añade categoría y etiquetas después
+          Se guarda como borrador en tu Inbox
         </p>
       </div>
     </div>
