@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { title, description, nextStep, categoryId, status, scorePotential, scoreEffort, scoreInterest, tags, imageUrl } = body;
+  const { title, description, nextStep, categoryId, status, scorePotential, scoreEffort, scoreInterest, tags, imageUrl, aiImproved } = body;
 
   if (!title?.trim()) {
     return NextResponse.json({ error: "El título es obligatorio" }, { status: 400 });
@@ -88,6 +88,7 @@ export async function POST(req: NextRequest) {
       scoreEffort: clamp(scoreEffort),
       scoreInterest: clamp(scoreInterest),
       imageUrl: imageUrl || null,
+      aiImproved: aiImproved === true,
       tags: { create: tagConnections },
     },
     include: {

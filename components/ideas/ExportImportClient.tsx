@@ -119,6 +119,7 @@ export function ExportImportClient({ ideas }: Props) {
           scoreEffort: 5,
           scoreInterest: 5,
           tags: [],
+          aiImproved: true,
         }),
       });
 

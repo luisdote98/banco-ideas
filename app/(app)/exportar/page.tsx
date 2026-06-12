@@ -11,6 +11,7 @@ export default async function ExportarPage() {
     where: {
       createdAt: { gte: startOfWeek },
       status: { not: "ARCHIVED" },
+      aiImproved: false,   // no exportar ideas ya mejoradas por IA
     },
     include: {
       category: true,

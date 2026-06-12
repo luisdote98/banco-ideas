@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Rocket, Archive, Zap, RotateCcw, Loader2, Trash2 } from "lucide-react";
+import { Rocket, Archive, Zap, RotateCcw, Loader2, Trash2, Sparkles } from "lucide-react";
 import Image from "next/image";
 import { cn, timeAgo } from "@/lib/utils";
 import { TagPill } from "@/components/shared/TagPill";
@@ -108,6 +108,7 @@ export function IdeaCard({ idea, showQuickActions = false }: Props) {
             {/* Title */}
             <div className="flex items-start gap-2 min-w-0">
               {isProject && <Rocket className="w-3.5 h-3.5 text-violet-500 shrink-0 mt-0.5" />}
+              {idea.aiImproved && <Sparkles className="w-3.5 h-3.5 text-violet-400 shrink-0 mt-0.5" />}
               <p className={cn(
                 "font-medium leading-snug flex-1 min-w-0 text-sm",
                 "line-clamp-1 md:line-clamp-2",
