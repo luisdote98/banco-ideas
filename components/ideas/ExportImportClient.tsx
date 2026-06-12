@@ -100,35 +100,65 @@ export function ExportImportClient({ ideas }: Props) {
     toast.success(`${result.length} idea${result.length !== 1 ? "s" : ""} detectada${result.length !== 1 ? "s" : ""}`);
   };
 
-  const saveOne = async (idea: ParsedIdea, index: number) => {
-    setSaveStatuses((prev) => prev.map((s, i) => i === index ? "saving" : s));
+  const saveOne = async (idea: ParsedIdea, index: number): Promise<boolean> => {
+    setSaveStatuses((prev) => {
+      const next = [...prev];
+      next[index] = "saving";
+      return next;
+    });
     try {
       const res = await fetch("/api/ideas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: idea.title,
+          title: idea.title || "Sin título",
           description: idea.description || null,
           nextStep: idea.nextStep || null,
-          status: idea.status,
+          status: idea.status || "DRAFT",
           scorePotential: 5,
           scoreEffort: 5,
           scoreInterest: 5,
           tags: [],
         }),
       });
-      if (!res.ok) throw new Error();
-      setSaveStatuses((prev) => prev.map((s, i) => i === index ? "saved" : s));
-    } catch {
-      setSaveStatuses((prev) => prev.map((s, i) => i === index ? "error" : s));
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? `Error ${res.status}`);
+      }
+
+      setSaveStatuses((prev) => {
+        const next = [...prev];
+        next[index] = "saved";
+        return next;
+      });
+      return true;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Error desconocido";
+      toast.error(`Idea ${index + 1}: ${msg}`);
+      setSaveStatuses((prev) => {
+        const next = [...prev];
+        next[index] = "error";
+        return next;
+      });
+      return false;
     }
   };
 
   const saveAll = async () => {
-    await Promise.all(parsed.map((idea, i) => saveOne(idea, i)));
-    setAllSaved(true);
-    toast.success("Todas las ideas guardadas en el Inbox");
-    router.refresh();
+    // Guardar secuencialmente para evitar conflictos de estado
+    let savedAny = false;
+    for (let i = 0; i < parsed.length; i++) {
+      if (saveStatuses[i] !== "saved") {
+        const ok = await saveOne(parsed[i], i);
+        if (ok) savedAny = true;
+      }
+    }
+    if (savedAny) {
+      setAllSaved(true);
+      toast.success("Ideas guardadas en el Inbox ✓");
+      router.refresh();
+    }
   };
 
   const savedCount = saveStatuses.filter(s => s === "saved").length;
