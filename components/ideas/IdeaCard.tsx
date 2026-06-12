@@ -26,6 +26,10 @@ export function IdeaCard({ idea, showQuickActions = false }: Props) {
   const [acting, setActing] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleted, setDeleted] = useState(false);
+
+  // Desaparece inmediatamente del DOM si se ha eliminado
+  if (deleted) return null;
 
   const quickAction = async (e: React.MouseEvent, action: string, payload: object) => {
     e.preventDefault();
@@ -60,13 +64,14 @@ export function IdeaCard({ idea, showQuickActions = false }: Props) {
   const confirmDelete = async () => {
     setDeleting(true);
     try {
-      await fetch(`/api/ideas/${idea.id}`, { method: "DELETE" });
-      toast.success("Idea eliminada");
+      const res = await fetch(`/api/ideas/${idea.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
       setDeleteOpen(false);
+      setDeleted(true); // desaparece al instante
+      toast.success("Idea eliminada");
       router.refresh();
     } catch {
       toast.error("Error al eliminar");
-    } finally {
       setDeleting(false);
     }
   };
