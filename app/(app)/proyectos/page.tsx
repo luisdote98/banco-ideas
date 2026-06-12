@@ -18,8 +18,8 @@ export default async function ProyectosPage() {
 
   const groups = [
     { label: "Activos", items: activos, color: "text-emerald-600 dark:text-emerald-400" },
-    { label: "Incubando", items: incubando, color: "text-amber-600 dark:text-amber-400" },
-    { label: "Borradores", items: borradores, color: "text-muted-foreground" },
+    { label: "En proceso", items: incubando, color: "text-amber-600 dark:text-amber-400" },
+    { label: "Sin realizar", items: borradores, color: "text-muted-foreground" },
   ].filter((g) => g.items.length > 0);
 
   return (

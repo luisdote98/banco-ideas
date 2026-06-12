@@ -51,16 +51,11 @@ export default async function InboxPage() {
           </Link>
         </div>
       ) : (
-        <>
-          <div className="rounded-xl border border-amber-200/60 bg-amber-50/50 dark:border-amber-900/40 dark:bg-amber-900/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-400">
-            💡 Estas ideas están en borrador. Ábrelas para añadir categoría, etiquetas y puntuación.
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {ideas.map((idea) => (
-              <IdeaCard key={idea.id} idea={idea} showQuickActions />
-            ))}
-          </div>
-        </>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {ideas.map((idea) => (
+            <IdeaCard key={idea.id} idea={idea} showQuickActions />
+          ))}
+        </div>
       )}
     </div>
   );

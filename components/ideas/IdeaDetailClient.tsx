@@ -173,10 +173,9 @@ export function IdeaDetailClient({ idea, categories }: Props) {
             <StatusBadge status={data.status} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="DRAFT">Borrador</SelectItem>
+            <SelectItem value="DRAFT">Sin realizar</SelectItem>
             <SelectItem value="ACTIVE">Activa</SelectItem>
-            <SelectItem value="INCUBATING">Incubando</SelectItem>
-            <SelectItem value="ARCHIVED">Archivada</SelectItem>
+            <SelectItem value="INCUBATING">En proceso</SelectItem>
           </SelectContent>
         </Select>
         {saving && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}

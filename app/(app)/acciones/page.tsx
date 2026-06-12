@@ -28,8 +28,8 @@ export default async function AccionesPage() {
 
   const groups = [
     { key: "ACTIVE", label: "Activas", color: "text-emerald-600 dark:text-emerald-400", dot: "bg-emerald-500" },
-    { key: "INCUBATING", label: "Incubando", color: "text-amber-600 dark:text-amber-400", dot: "bg-amber-500" },
-    { key: "DRAFT", label: "Borradores", color: "text-muted-foreground", dot: "bg-zinc-400" },
+    { key: "INCUBATING", label: "En proceso", color: "text-amber-600 dark:text-amber-400", dot: "bg-amber-500" },
+    { key: "DRAFT", label: "Sin realizar", color: "text-muted-foreground", dot: "bg-zinc-400" },
   ].filter((g) => byStatus[g.key as keyof typeof byStatus].length > 0);
 
   return (
