@@ -82,6 +82,15 @@ export function ExportImportClient({ ideas }: Props) {
     await navigator.clipboard.writeText(exportText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
+
+    // Marcar estas ideas como ya enviadas a IA — no volverán a salir en el export
+    if (ideas.length > 0) {
+      fetch("/api/ideas/mark-exported", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: ideas.map((i) => i.id) }),
+      }).catch(() => {}); // silencioso, no bloquea el flujo
+    }
   };
 
   // Import state
@@ -107,8 +116,7 @@ export function ExportImportClient({ ideas }: Props) {
       return next;
     });
     try {
-      // Usar endpoint de import que actualiza la original si existe
-      const res = await fetch("/api/ideas/import", {
+      const res = await fetch("/api/ideas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -116,6 +124,11 @@ export function ExportImportClient({ ideas }: Props) {
           description: idea.description || null,
           nextStep: idea.nextStep || null,
           status: idea.status || "DRAFT",
+          scorePotential: 5,
+          scoreEffort: 5,
+          scoreInterest: 5,
+          tags: [],
+          aiImproved: true,
         }),
       });
 
@@ -124,16 +137,11 @@ export function ExportImportClient({ ideas }: Props) {
         throw new Error(data.error ?? `Error ${res.status}`);
       }
 
-      const { action } = await res.json();
       setSaveStatuses((prev) => {
         const next = [...prev];
         next[index] = "saved";
         return next;
       });
-      // Mostrar si actualizó la original o creó una nueva
-      if (action === "updated") {
-        toast.success(`Idea ${index + 1} actualizada ✓`);
-      }
       return true;
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Error desconocido";
