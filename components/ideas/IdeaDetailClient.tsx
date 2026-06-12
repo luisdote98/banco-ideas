@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
-  Star, MapPin, Calendar, ChevronDown, ChevronUp,
+  MapPin, Calendar, ChevronDown, ChevronUp,
   Loader2, Trash2, Archive, RotateCcw, Check, X, Rocket, ZoomIn,
 } from "lucide-react";
 import Image from "next/image";
@@ -17,12 +17,11 @@ import {
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
-import { ScoreSlider } from "@/components/shared/ScoreSlider";
-import { ScoreBar } from "@/components/shared/ScoreBar";
 import { TagInput } from "@/components/shared/TagInput";
 import { TagPill } from "@/components/shared/TagPill";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { scoreCompuesto, formatDate, cn } from "@/lib/utils";
+import { CategoryPicker } from "@/components/shared/CategoryPicker";
+import { formatDate, cn } from "@/lib/utils";
 import { IdeaHistoryTimeline } from "@/components/ideas/IdeaHistory";
 import { ImageUpload } from "@/components/shared/ImageUpload";
 import type { Category, IdeaHistory } from "@/types";
@@ -56,35 +55,28 @@ type EditableField = "title" | "description" | "nextStep" | null;
 export function IdeaDetailClient({ idea, categories }: Props) {
   const router = useRouter();
 
-  // Local state mirrors the idea so UI updates optimistically
   const [data, setData] = useState({
     title: idea.title,
     description: idea.description ?? "",
     nextStep: idea.nextStep ?? "",
     status: idea.status,
     type: idea.type,
-    categoryId: idea.categoryId ?? "",
-    scorePotential: idea.scorePotential,
-    scoreEffort: idea.scoreEffort,
-    scoreInterest: idea.scoreInterest,
+    categoryId: idea.categoryId ?? null,
     tags: idea.tags.map((t) => t.tag.name),
     imageUrl: idea.imageUrl ?? null,
   });
 
   const [editingField, setEditingField] = useState<EditableField>(null);
-  const [lightbox, setLightbox] = useState(false);
   const [draft, setDraft] = useState("");
+  const [lightbox, setLightbox] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(
-    // Auto-expand if any advanced field is filled
-    !!(idea.description || idea.nextStep || idea.categoryId ||
-      idea.tags.length > 0 || idea.scorePotential !== 5 ||
-      idea.scoreEffort !== 5 || idea.scoreInterest !== 5)
+    !!(idea.description || idea.nextStep || idea.categoryId || idea.tags.length > 0)
   );
   const [saving, setSaving] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const patch = async (updates: Partial<typeof data>) => {
+  const patch = async (updates: Partial<typeof data> & Record<string, unknown>) => {
     setSaving(true);
     try {
       const res = await fetch(`/api/ideas/${idea.id}`, {
@@ -102,7 +94,6 @@ export function IdeaDetailClient({ idea, categories }: Props) {
     }
   };
 
-  // Inline text editing
   const startEdit = (field: EditableField, value: string) => {
     setEditingField(field);
     setDraft(value);
@@ -134,14 +125,13 @@ export function IdeaDetailClient({ idea, categories }: Props) {
     }
   };
 
-  const score = scoreCompuesto(data.scorePotential, data.scoreEffort, data.scoreInterest);
   const isArchived = data.status === "ARCHIVED";
 
   return (
     <div className="space-y-6">
 
-      {/* ── Title ─────────────────────────────────────────── */}
-      <div className="group">
+      {/* ── Título ──────────────────────────────────────────── */}
+      <div>
         {editingField === "title" ? (
           <div className="space-y-2">
             <Input
@@ -167,15 +157,14 @@ export function IdeaDetailClient({ idea, categories }: Props) {
           <h1
             className="text-2xl font-semibold tracking-tight leading-snug cursor-text hover:text-primary transition-colors"
             onClick={() => startEdit("title", data.title)}
-            title="Haz clic para editar"
           >
             {data.title}
           </h1>
         )}
       </div>
 
-      {/* ── Status + Category + Score row ─────────────────── */}
-      <div className="flex flex-wrap items-center gap-2">
+      {/* ── Estado ──────────────────────────────────────────── */}
+      <div className="flex items-center gap-2">
         <Select
           value={data.status}
           onValueChange={(v) => { if (v) patch({ status: v }); }}
@@ -190,16 +179,54 @@ export function IdeaDetailClient({ idea, categories }: Props) {
             <SelectItem value="ARCHIVED">Archivada</SelectItem>
           </SelectContent>
         </Select>
-
-        <div className="flex items-center gap-1.5 text-amber-500 ml-auto">
-          <Star className="w-4 h-4 fill-amber-500" />
-          <span className="text-sm font-semibold tabular-nums">{score.toFixed(1)}</span>
-          <span className="text-xs text-muted-foreground">/ 10</span>
-          {saving && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground ml-1" />}
-        </div>
+        {saving && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
       </div>
 
-      {/* ── Description ───────────────────────────────────── */}
+      {/* ── Imagen visible ──────────────────────────────────── */}
+      {data.imageUrl && (
+        <>
+          {lightbox && (
+            <div
+              className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+              onClick={() => setLightbox(false)}
+            >
+              <button
+                className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+                onClick={() => setLightbox(false)}
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <Image
+                src={data.imageUrl}
+                alt={data.title}
+                width={1200}
+                height={900}
+                className="max-w-full max-h-[90vh] object-contain rounded-lg"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          )}
+          <div
+            className="relative rounded-xl overflow-hidden border border-border cursor-zoom-in group"
+            onClick={() => setLightbox(true)}
+          >
+            <Image
+              src={data.imageUrl}
+              alt={data.title}
+              width={800}
+              height={500}
+              className="w-full max-h-72 object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+            />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded-full p-2">
+                <ZoomIn className="w-5 h-5 text-white" />
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ── Descripción ─────────────────────────────────────── */}
       <div>
         {editingField === "description" ? (
           <div className="space-y-2">
@@ -207,9 +234,7 @@ export function IdeaDetailClient({ idea, categories }: Props) {
               autoFocus
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") cancelEdit();
-              }}
+              onKeyDown={(e) => { if (e.key === "Escape") cancelEdit(); }}
               placeholder="Describe la idea..."
               rows={4}
               className="resize-none"
@@ -244,54 +269,7 @@ export function IdeaDetailClient({ idea, categories }: Props) {
         )}
       </div>
 
-      {/* ── Imagen visible ────────────────────────────────── */}
-      {data.imageUrl && (
-        <>
-          {/* Lightbox */}
-          {lightbox && (
-            <div
-              className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
-              onClick={() => setLightbox(false)}
-            >
-              <button
-                className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
-                onClick={() => setLightbox(false)}
-              >
-                <X className="w-5 h-5" />
-              </button>
-              <Image
-                src={data.imageUrl}
-                alt={data.title}
-                width={1200}
-                height={900}
-                className="max-w-full max-h-[90vh] object-contain rounded-lg"
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
-          )}
-
-          {/* Miniatura clicable */}
-          <div
-            className="relative rounded-xl overflow-hidden border border-border cursor-zoom-in group"
-            onClick={() => setLightbox(true)}
-          >
-            <Image
-              src={data.imageUrl}
-              alt={data.title}
-              width={800}
-              height={500}
-              className="w-full max-h-72 object-cover transition-transform duration-200 group-hover:scale-[1.02]"
-            />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded-full p-2">
-                <ZoomIn className="w-5 h-5 text-white" />
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* ── Advanced toggle ────────────────────────────────── */}
+      {/* ── Toggle detalles ─────────────────────────────────── */}
       <button
         type="button"
         onClick={() => setShowAdvanced((v) => !v)}
@@ -306,31 +284,22 @@ export function IdeaDetailClient({ idea, categories }: Props) {
         <div className="flex-1 h-px bg-border" />
       </button>
 
-      {/* ── Advanced section ───────────────────────────────── */}
+      {/* ── Sección avanzada ────────────────────────────────── */}
       {showAdvanced && (
         <div className="space-y-6">
 
-          {/* Category */}
-          <div className="space-y-1.5">
+          {/* Categoría — botones */}
+          <div className="space-y-2">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Categoría</p>
-            <Select
-              value={data.categoryId || "_none"}
-              onValueChange={(v) => patch({ categoryId: !v || v === "_none" ? "" : v })}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Sin categoría" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="_none">Sin categoría</SelectItem>
-                {categories.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <CategoryPicker
+              categories={categories}
+              value={data.categoryId}
+              onChange={(id) => patch({ categoryId: id || null })}
+            />
           </div>
 
-          {/* Image */}
-          <div className="space-y-1.5">
+          {/* Imagen */}
+          <div className="space-y-2">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Imagen</p>
             <ImageUpload
               value={data.imageUrl}
@@ -341,86 +310,19 @@ export function IdeaDetailClient({ idea, categories }: Props) {
             />
           </div>
 
-          {/* Tags */}
-          <div className="space-y-1.5">
+          {/* Etiquetas */}
+          <div className="space-y-2">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Etiquetas</p>
-            {editingField === null && (
-              <div
-                className={cn(
-                  "rounded-lg border px-3 py-2 cursor-text min-h-[38px] transition-colors",
-                  data.tags.length ? "border-border hover:border-primary/40" : "border-dashed border-border hover:border-primary/40"
-                )}
-                onClick={() => setEditingField("title")} // Trick: use a flag
-              >
-                {data.tags.length > 0 ? (
-                  <div className="flex flex-wrap gap-1">
-                    {data.tags.map((t, i) => <TagPill key={i} name={t} size="sm" />)}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground/50">Añade etiquetas...</p>
-                )}
+            <TagInput tags={data.tags} onChange={(tags) => patch({ tags })} />
+            {data.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {data.tags.map((t, i) => <TagPill key={i} name={t} size="sm" />)}
               </div>
             )}
-            <TagInput
-              tags={data.tags}
-              onChange={(tags) => patch({ tags })}
-            />
           </div>
 
-          {/* Scores */}
-          <div className="space-y-4 rounded-xl border border-border bg-card p-5">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Puntuación</p>
-            <ScoreSlider
-              label="Potencial económico"
-              description="¿Qué valor podría generar?"
-              value={data.scorePotential}
-              onChange={(v) => setData((d) => ({ ...d, scorePotential: v }))}
-              accentColor="#8b5cf6"
-            />
-            <ScoreSlider
-              label="Esfuerzo requerido"
-              description="1 = mínimo · 10 = máximo"
-              value={data.scoreEffort}
-              onChange={(v) => setData((d) => ({ ...d, scoreEffort: v }))}
-              accentColor="#f59e0b"
-            />
-            <ScoreSlider
-              label="Interés personal"
-              description="¿Cuánto te motiva?"
-              value={data.scoreInterest}
-              onChange={(v) => setData((d) => ({ ...d, scoreInterest: v }))}
-              accentColor="#10b981"
-            />
-            <Button
-              size="sm"
-              variant="outline"
-              className="w-full mt-1"
-              onClick={() => patch({
-                scorePotential: data.scorePotential,
-                scoreEffort: data.scoreEffort,
-                scoreInterest: data.scoreInterest,
-              })}
-            >
-              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : null}
-              Guardar puntuación
-            </Button>
-
-            <div className="pt-3 border-t border-border space-y-3">
-              <ScoreBar label="Potencial" value={data.scorePotential} hexColor="#8b5cf6" />
-              <ScoreBar label="Esfuerzo" value={data.scoreEffort} hexColor="#f59e0b" />
-              <ScoreBar label="Interés" value={data.scoreInterest} hexColor="#10b981" />
-              <div className="flex items-center justify-between pt-1">
-                <span className="text-xs text-muted-foreground">Score compuesto</span>
-                <div className="flex items-center gap-1.5 text-amber-500">
-                  <Star className="w-3.5 h-3.5 fill-amber-500" />
-                  <span className="font-semibold text-sm">{score.toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Next step */}
-          <div className="space-y-1.5">
+          {/* Próximo paso */}
+          <div className="space-y-2">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Próximo paso</p>
             {editingField === "nextStep" ? (
               <div className="space-y-2">
@@ -454,55 +356,50 @@ export function IdeaDetailClient({ idea, categories }: Props) {
                 )}
               >
                 <MapPin className={cn("w-4 h-4 shrink-0", data.nextStep ? "text-primary" : "text-muted-foreground/40")} />
-                {data.nextStep ? (
-                  <p className="text-sm">{data.nextStep}</p>
-                ) : (
-                  <p className="text-sm text-muted-foreground/50">Define el siguiente paso...</p>
-                )}
+                {data.nextStep
+                  ? <p className="text-sm">{data.nextStep}</p>
+                  : <p className="text-sm text-muted-foreground/50">Define el siguiente paso...</p>
+                }
               </div>
             )}
           </div>
-        </div>
-      )}
 
-      {/* ── Metadata + Actions ────────────────────────────── */}
-      <div className="flex items-center justify-between pt-4 border-t border-border">
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5" />
-            {formatDate(idea.createdAt)}
-          </div>
-          {/* Convert to project toggle */}
+          {/* Convertir a proyecto */}
           <button
             onClick={() => patch({ type: data.type === "PROJECT" ? "IDEA" : "PROJECT" })}
             className={cn(
-              "flex items-center gap-1.5 px-2 py-1 rounded-md border transition-colors",
+              "flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm font-medium transition-colors",
               data.type === "PROJECT"
                 ? "border-violet-300 bg-violet-50 text-violet-600 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-400"
-                : "border-border hover:border-violet-300 hover:text-violet-600"
+                : "border-border text-muted-foreground hover:border-violet-300 hover:text-violet-600"
             )}
           >
-            <Rocket className="w-3 h-3" />
-            {data.type === "PROJECT" ? "Proyecto" : "Convertir a proyecto"}
+            <Rocket className="w-3.5 h-3.5" />
+            {data.type === "PROJECT" ? "Es un Proyecto" : "Convertir a Proyecto"}
           </button>
-        </div>
 
+        </div>
+      )}
+
+      {/* ── Metadata + Acciones ─────────────────────────────── */}
+      <div className="flex items-center justify-between pt-4 border-t border-border">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Calendar className="w-3.5 h-3.5" />
+          {formatDate(idea.createdAt)}
+        </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="ghost"
-            size="sm"
+            variant="ghost" size="sm"
             className="gap-1.5 text-muted-foreground h-7 text-xs"
             onClick={() => patch({ status: isArchived ? "DRAFT" : "ARCHIVED" })}
           >
-            {isArchived ? (
-              <><RotateCcw className="w-3.5 h-3.5" /> Restaurar</>
-            ) : (
-              <><Archive className="w-3.5 h-3.5" /> Archivar</>
-            )}
+            {isArchived
+              ? <><RotateCcw className="w-3.5 h-3.5" /> Restaurar</>
+              : <><Archive className="w-3.5 h-3.5" /> Archivar</>
+            }
           </Button>
           <Button
-            variant="ghost"
-            size="sm"
+            variant="ghost" size="sm"
             className="gap-1.5 text-destructive hover:text-destructive h-7 text-xs"
             onClick={() => setDeleteOpen(true)}
           >
@@ -511,21 +408,19 @@ export function IdeaDetailClient({ idea, categories }: Props) {
         </div>
       </div>
 
-      {/* ── History ───────────────────────────────────────── */}
+      {/* Historial */}
       {idea.history && idea.history.length > 0 && (
         <div className="pt-2">
           <IdeaHistoryTimeline history={idea.history} />
         </div>
       )}
 
-      {/* Delete dialog */}
+      {/* Diálogo eliminar */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>¿Eliminar idea?</DialogTitle>
-            <DialogDescription>
-              Esta acción no se puede deshacer.
-            </DialogDescription>
+            <DialogDescription>Esta acción no se puede deshacer.</DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setDeleteOpen(false)} disabled={deleting}>

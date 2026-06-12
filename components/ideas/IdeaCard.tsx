@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Star, Rocket, Archive, Zap, RotateCcw, Loader2, Trash2 } from "lucide-react";
+import { Rocket, Archive, Zap, RotateCcw, Loader2, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { cn, scoreCompuesto, timeAgo } from "@/lib/utils";
+import { cn, timeAgo } from "@/lib/utils";
 import { TagPill } from "@/components/shared/TagPill";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import {
@@ -23,7 +23,6 @@ type Props = {
 
 export function IdeaCard({ idea, showQuickActions = false }: Props) {
   const router = useRouter();
-  const score = scoreCompuesto(idea.scorePotential, idea.scoreEffort, idea.scoreInterest);
   const [acting, setActing] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -156,10 +155,6 @@ export function IdeaCard({ idea, showQuickActions = false }: Props) {
                 )}
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <div className="flex items-center gap-0.5 text-amber-500">
-                  <Star className="w-3 h-3 fill-amber-500" />
-                  <span className="text-xs font-medium tabular-nums">{score.toFixed(1)}</span>
-                </div>
                 <span className="text-xs text-muted-foreground/60 tabular-nums">{timeAgo(idea.createdAt)}</span>
               </div>
             </div>
