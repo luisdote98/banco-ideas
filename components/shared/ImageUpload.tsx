@@ -95,7 +95,6 @@ export function ImageUpload({ value, onChange }: Props) {
         ref={inputRef}
         type="file"
         accept="image/*"
-        capture="environment"  /* abre cámara en móvil */
         className="hidden"
         onChange={handleFile}
       />
