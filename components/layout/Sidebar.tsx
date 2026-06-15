@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Lightbulb, FolderOpen, Inbox,
   Briefcase, Code2, Palette, Megaphone, Plane,
-  Newspaper, Target, Rocket, FlaskConical, BookOpen, ArrowRight, Sparkles,
+  Newspaper, Target, Rocket, FlaskConical, BookOpen, ArrowRight, Sparkles, CheckCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -93,6 +93,7 @@ export function Sidebar({ categories, inboxCount }: Props) {
         {navLink("/proyectos", Rocket, "Proyectos")}
         {navLink("/ideas", Lightbulb, "Todas las ideas")}
         {navLink("/exportar", Sparkles, "Exportar a IA")}
+        {navLink("/exportadas", CheckCheck, "Ideas exportadas")}
         {navLink("/categorias", FolderOpen, "Categorías")}
         {navLink("/dashboard", LayoutDashboard, "Dashboard")}
 

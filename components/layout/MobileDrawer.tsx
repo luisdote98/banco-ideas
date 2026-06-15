@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   X, Lightbulb, LayoutDashboard,
   Briefcase, Code2, Palette, Megaphone,
-  Plane, Newspaper, Target, FlaskConical, BookOpen, LogOut, Sparkles, Rocket,
+  Plane, Newspaper, Target, FlaskConical, BookOpen, LogOut, Sparkles, Rocket, CheckCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -97,6 +97,7 @@ export function MobileDrawer({ open, onClose, categories, onLogout }: Props) {
         <nav className="flex-1 overflow-y-auto p-3 space-y-1">
           {navItem("/ideas", Lightbulb, "Todas las ideas")}
           {navItem("/exportar", Sparkles, "Exportar a IA")}
+          {navItem("/exportadas", CheckCheck, "Ideas exportadas")}
           {navItem("/dashboard", LayoutDashboard, "Dashboard")}
 
           {categories.filter(c => c._count.ideas > 0).length > 0 && (
