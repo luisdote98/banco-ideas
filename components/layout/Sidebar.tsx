@@ -93,7 +93,7 @@ export function Sidebar({ categories, inboxCount }: Props) {
         {navLink("/proyectos", Rocket, "Proyectos")}
         {navLink("/ideas", Lightbulb, "Todas las ideas")}
         {navLink("/exportar", Sparkles, "Exportar a IA")}
-        {navLink("/exportadas", CheckCheck, "Ideas exportadas")}
+        {navLink("/procesadas", CheckCheck, "Ideas procesadas")}
         {navLink("/categorias", FolderOpen, "Categorías")}
         {navLink("/dashboard", LayoutDashboard, "Dashboard")}
 

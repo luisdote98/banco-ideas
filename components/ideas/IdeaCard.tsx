@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Rocket, Archive, Zap, RotateCcw, Loader2, Trash2, Sparkles } from "lucide-react";
+import { Rocket, Archive, Zap, RotateCcw, Loader2, Trash2, Sparkles, CheckCheck } from "lucide-react";
 import Image from "next/image";
 import { cn, timeAgo } from "@/lib/utils";
 import { TagPill } from "@/components/shared/TagPill";
@@ -108,7 +108,12 @@ export function IdeaCard({ idea, showQuickActions = false }: Props) {
             {/* Title */}
             <div className="flex items-start gap-2 min-w-0">
               {isProject && <Rocket className="w-3.5 h-3.5 text-violet-500 shrink-0 mt-0.5" />}
-              {idea.aiImproved && <Sparkles className="w-3.5 h-3.5 text-violet-400 shrink-0 mt-0.5" />}
+              {idea.aiProcessedAt && <Sparkles className="w-3.5 h-3.5 text-violet-400 shrink-0 mt-0.5" />}
+              {idea.aiImproved && !idea.aiProcessedAt && (
+                <span title="Exportada a IA — revisa 'Ideas procesadas' para importar la versión mejorada">
+                  <CheckCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                </span>
+              )}
               <p className={cn(
                 "font-medium leading-snug flex-1 min-w-0 text-sm",
                 "line-clamp-1 md:line-clamp-2",
@@ -151,6 +156,15 @@ export function IdeaCard({ idea, showQuickActions = false }: Props) {
               <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
                 {/* Estado — siempre visible */}
                 <StatusBadge status={idea.status} />
+                {idea.aiImproved && !idea.aiProcessedAt && (
+                  <span
+                    className="flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400"
+                    title="Exportada a IA — su versión mejorada está en 'Ideas procesadas'"
+                  >
+                    <CheckCheck className="w-3 h-3" />
+                    Exportada
+                  </span>
+                )}
                 {idea.category && (
                   <span
                     className="hidden sm:inline text-xs font-medium px-1.5 py-0.5 rounded-full truncate max-w-[90px]"

@@ -138,6 +138,7 @@ export function ExportImportClient({ ideas }: Props) {
           scoreInterest: 5,
           tags: [],
           aiImproved: true,
+          aiProcessedAt: new Date().toISOString(),
         }),
       });
 
