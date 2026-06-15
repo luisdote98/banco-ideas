@@ -5,20 +5,16 @@ import { BottomNav } from "@/components/layout/BottomNav";
 import { MobileDrawer } from "@/components/layout/MobileDrawer";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const [categories, inboxCount, accionesCount] = await Promise.all([
-    prisma.category.findMany({
-      orderBy: { name: "asc" },
-      include: { _count: { select: { ideas: true } } },
-    }),
-    prisma.idea.count({ where: { status: "DRAFT" } }),
-    prisma.idea.count({ where: { nextStep: { not: null }, status: { not: "ARCHIVED" } } }),
-  ]);
+  const categories = await prisma.category.findMany({
+    orderBy: { name: "asc" },
+    include: { _count: { select: { ideas: true } } },
+  });
 
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Desktop sidebar — hidden on mobile */}
       <div className="hidden md:flex">
-        <Sidebar categories={categories} inboxCount={inboxCount} />
+        <Sidebar categories={categories} />
       </div>
 
       <div className="flex-1 flex flex-col min-w-0">

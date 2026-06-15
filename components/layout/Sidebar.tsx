@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard, Lightbulb, FolderOpen, Inbox,
+  Lightbulb,
   Briefcase, Code2, Palette, Megaphone, Plane,
-  Newspaper, Target, Rocket, FlaskConical, BookOpen, ArrowRight, Sparkles, CheckCheck,
+  Newspaper, Target, Rocket, FlaskConical, BookOpen, Sparkles, CheckCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,14 +34,12 @@ type Category = {
 
 type Props = {
   categories: Category[];
-  inboxCount: number;
 };
 
-export function Sidebar({ categories, inboxCount }: Props) {
+export function Sidebar({ categories }: Props) {
   const pathname = usePathname();
 
   const isActive = (href: string) => {
-    if (href === "/inbox") return pathname === "/inbox";
     if (href === "/ideas") return pathname === "/ideas" || (pathname.startsWith("/ideas") && !pathname.startsWith("/ideas/nueva"));
     return pathname === href || (href !== "/" && pathname.startsWith(href + "/"));
   };
@@ -88,14 +86,9 @@ export function Sidebar({ categories, inboxCount }: Props) {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
-        {navLink("/inbox", Inbox, "Inbox", inboxCount)}
-        {navLink("/acciones", ArrowRight, "Acciones")}
-        {navLink("/proyectos", Rocket, "Proyectos")}
         {navLink("/ideas", Lightbulb, "Todas las ideas")}
-        {navLink("/exportar", Sparkles, "Exportar a IA")}
         {navLink("/procesadas", CheckCheck, "Ideas procesadas")}
-        {navLink("/categorias", FolderOpen, "Categorías")}
-        {navLink("/dashboard", LayoutDashboard, "Dashboard")}
+        {navLink("/exportar", Sparkles, "Exportar a IA")}
 
         {categories.length > 0 && (
           <div className="pt-4">
