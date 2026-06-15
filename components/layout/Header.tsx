@@ -15,11 +15,10 @@ type Category = {
 };
 
 type Props = {
-  inboxCount?: number;
   categories?: Category[];
 };
 
-export function Header({ inboxCount = 0, categories = [] }: Props) {
+export function Header({ categories = [] }: Props) {
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -40,7 +39,6 @@ export function Header({ inboxCount = 0, categories = [] }: Props) {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         categories={categories}
-        inboxCount={inboxCount}
         onLogout={handleLogout}
       />
 

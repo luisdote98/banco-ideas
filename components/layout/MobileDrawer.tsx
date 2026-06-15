@@ -4,9 +4,9 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  X, Inbox, Lightbulb, FolderOpen, LayoutDashboard,
-  Rocket, ArrowRight, Briefcase, Code2, Palette, Megaphone,
-  Plane, Newspaper, Target, FlaskConical, BookOpen, LogOut, Sparkles,
+  X, Lightbulb, LayoutDashboard,
+  Briefcase, Code2, Palette, Megaphone,
+  Plane, Newspaper, Target, FlaskConical, BookOpen, LogOut, Sparkles, Rocket,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,11 +26,10 @@ type Props = {
   open: boolean;
   onClose: () => void;
   categories: Category[];
-  inboxCount: number;
   onLogout?: () => void;
 };
 
-export function MobileDrawer({ open, onClose, categories, inboxCount, onLogout }: Props) {
+export function MobileDrawer({ open, onClose, categories, onLogout }: Props) {
   const pathname = usePathname();
 
   // Close on route change
@@ -96,12 +95,8 @@ export function MobileDrawer({ open, onClose, categories, inboxCount, onLogout }
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-          {navItem("/inbox", Inbox, "Inbox", inboxCount)}
-          {navItem("/acciones", ArrowRight, "Acciones pendientes")}
-          {navItem("/proyectos", Rocket, "Proyectos")}
           {navItem("/ideas", Lightbulb, "Todas las ideas")}
           {navItem("/exportar", Sparkles, "Exportar a IA")}
-          {navItem("/categorias", FolderOpen, "Categorías")}
           {navItem("/dashboard", LayoutDashboard, "Dashboard")}
 
           {categories.filter(c => c._count.ideas > 0).length > 0 && (

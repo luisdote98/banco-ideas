@@ -2,19 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Inbox, Lightbulb, Zap, Rocket, Search } from "lucide-react";
+import { Lightbulb, Zap, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { CommandPalette } from "./CommandPalette";
 
-type Props = { inboxCount: number };
-
-export function BottomNav({ inboxCount }: Props) {
+export function BottomNav() {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
 
-  const isActive = (href: string) =>
-    href === "/inbox" ? pathname === "/inbox" : pathname.startsWith(href);
+  const isActive = (href: string) => pathname.startsWith(href);
 
   return (
     <>
@@ -23,18 +20,6 @@ export function BottomNav({ inboxCount }: Props) {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border">
         {/* Safe area for iPhone */}
         <div className="flex items-stretch h-16 pb-safe">
-
-          {/* Inbox */}
-          <NavItem href="/inbox" label="Inbox" isActive={isActive("/inbox")}>
-            <div className="relative">
-              <Inbox className="w-5 h-5" />
-              {inboxCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
-                  {inboxCount > 9 ? "9+" : inboxCount}
-                </span>
-              )}
-            </div>
-          </NavItem>
 
           {/* Ideas */}
           <NavItem href="/ideas" label="Ideas" isActive={isActive("/ideas") && !isActive("/ideas/nueva")}>
@@ -50,11 +35,6 @@ export function BottomNav({ inboxCount }: Props) {
               <Zap className="w-6 h-6" />
             </Link>
           </div>
-
-          {/* Proyectos */}
-          <NavItem href="/proyectos" label="Proyectos" isActive={isActive("/proyectos")}>
-            <Rocket className="w-5 h-5" />
-          </NavItem>
 
           {/* Search */}
           <button

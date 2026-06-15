@@ -78,19 +78,28 @@ export function ExportImportClient({ ideas }: Props) {
   const exportText = buildExportText(ideas);
   const hasImages = ideas.some((i) => i.imageUrl);
 
+  const markAsExported = async (showToast = false) => {
+    if (ideas.length === 0) return;
+    try {
+      await fetch("/api/ideas/mark-exported", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: ideas.map((i) => i.id) }),
+      });
+      if (showToast) {
+        toast.success(`${ideas.length} ideas marcadas — ya no saldrán en el exportador`);
+        router.refresh();
+      }
+    } catch {
+      if (showToast) toast.error("Error al marcar las ideas");
+    }
+  };
+
   const handleCopy = async () => {
     await navigator.clipboard.writeText(exportText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
-
-    // Marcar estas ideas como ya enviadas a IA — no volverán a salir en el export
-    if (ideas.length > 0) {
-      fetch("/api/ideas/mark-exported", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: ideas.map((i) => i.id) }),
-      }).catch(() => {}); // silencioso, no bloquea el flujo
-    }
+    await markAsExported(false); // marca silenciosamente al copiar
   };
 
   // Import state
@@ -262,6 +271,15 @@ export function ExportImportClient({ ideas }: Props) {
                   {copied ? <><Check className="w-4 h-4" />¡Copiado!</> : <><Copy className="w-4 h-4" />Copiar ideas formateadas</>}
                 </button>
               </div>
+
+              {/* Marcar manualmente ideas ya enviadas previamente */}
+              <button
+                onClick={() => markAsExported(true)}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                Ya envié estas ideas antes — marcarlas como exportadas
+              </button>
             </>
           )}
         </div>

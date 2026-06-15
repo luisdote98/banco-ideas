@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, KeyboardEvent, ClipboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, ArrowRight, Clipboard, X } from "lucide-react";
+import { Loader2, ArrowRight, ImagePlus, X } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
@@ -195,14 +195,15 @@ export function QuickCapture() {
             {/* Bottom bar */}
             <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-4 pb-3.5">
               <div className="flex items-center gap-2">
-                {/* Botón para subir desde archivo (móvil) */}
+                {/* Botón para subir desde galería/cámara (móvil) */}
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="p-1.5 rounded-lg text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted transition-colors"
-                  title="Adjuntar imagen"
+                  className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-xs font-medium"
+                  title="Subir imagen"
                 >
-                  <Clipboard className="w-4 h-4" />
+                  <ImagePlus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Imagen</span>
                 </button>
                 <span className={`text-xs tabular-nums transition-colors ${charCount > 180 ? "text-amber-500" : "text-muted-foreground/40"}`}>
                   {charCount > 0 ? `${charCount}/200` : ""}
