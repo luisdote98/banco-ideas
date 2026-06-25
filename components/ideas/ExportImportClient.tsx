@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Copy, Check, Sparkles, Image as ImageIcon, Calendar,
-  ClipboardPaste, ArrowRight, Loader2, CheckCircle2, AlertCircle, EyeOff,
+  ClipboardPaste, ArrowRight, Loader2, CheckCircle2, AlertCircle, EyeOff, X,
 } from "lucide-react";
 import { formatDate, scoreCompuesto } from "@/lib/utils";
 import { STATUS_LABELS } from "@/lib/constants";
@@ -75,6 +75,7 @@ export function ExportImportClient({ ideas }: Props) {
 
   // Export state
   const [copied, setCopied] = useState(false);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [excluded, setExcluded] = useState<Set<string>>(new Set());
   const [excluding, setExcluding] = useState<string | null>(null);
 
@@ -204,6 +205,7 @@ export function ExportImportClient({ ideas }: Props) {
   const savedCount = saveStatuses.filter(s => s === "saved").length;
 
   return (
+    <>
     <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-6">
 
       {/* Header */}
@@ -269,7 +271,13 @@ export function ExportImportClient({ ideas }: Props) {
                       {idea.description && <p className="text-xs text-muted-foreground line-clamp-2">{idea.description}</p>}
                     </div>
                     {idea.imageUrl && (
-                      <Image src={idea.imageUrl} alt={idea.title} width={56} height={56} className="w-14 h-14 object-cover rounded-lg border border-border shrink-0" />
+                      <button
+                        type="button"
+                        onClick={() => setLightboxUrl(idea.imageUrl)}
+                        className="shrink-0 rounded-lg overflow-hidden border border-border hover:border-primary/50 hover:scale-105 transition-all"
+                      >
+                        <Image src={idea.imageUrl} alt={idea.title} width={56} height={56} className="w-14 h-14 object-cover" />
+                      </button>
                     )}
                     <button
                       onClick={() => excludeOne(idea.id)}
@@ -430,5 +438,30 @@ export function ExportImportClient({ ideas }: Props) {
         </div>
       )}
     </div>
+
+    {/* Lightbox */}
+    {lightboxUrl && (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+        onClick={() => setLightboxUrl(null)}
+      >
+        <button
+          className="absolute top-4 right-4 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
+          onClick={() => setLightboxUrl(null)}
+        >
+          <X className="w-5 h-5" />
+        </button>
+        <div onClick={(e) => e.stopPropagation()} className="relative max-w-4xl max-h-[90vh] w-full">
+          <Image
+            src={lightboxUrl}
+            alt="Imagen ampliada"
+            width={1200}
+            height={900}
+            className="w-full h-auto max-h-[90vh] object-contain rounded-xl"
+          />
+        </div>
+      </div>
+    )}
+    </>
   );
 }
