@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Lightbulb,
+  Lightbulb, CalendarDays,
   Briefcase, Code2, Palette, Megaphone, Plane,
   Newspaper, Target, Rocket, FlaskConical, BookOpen, Sparkles, CheckCheck,
 } from "lucide-react";
@@ -89,6 +89,7 @@ export function Sidebar({ categories }: Props) {
         {navLink("/ideas", Lightbulb, "Todas las ideas")}
         {navLink("/procesadas", CheckCheck, "Ideas procesadas")}
         {navLink("/exportar", Sparkles, "Exportar a IA")}
+        {navLink("/calendario", CalendarDays, "Calendario")}
 
         {categories.length > 0 && (
           <div className="pt-4">

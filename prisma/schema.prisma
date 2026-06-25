@@ -81,6 +81,16 @@ model Tag {
   @@map("tags")
 }
 
+model CalendarEvent {
+  id        String   @id @default(cuid())
+  title     String
+  date      DateTime // stored as UTC midnight of the day
+  color     String   @default("#6366f1")
+  createdAt DateTime @default(now())
+
+  @@map("calendar_events")
+}
+
 model TagsOnIdeas {
   idea   Idea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
   ideaId String
