@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   MapPin, Calendar, ChevronDown, ChevronUp,
-  Loader2, Trash2, Archive, RotateCcw, Check, X, Rocket, ZoomIn,
+  Loader2, Trash2, Archive, RotateCcw, Check, X, Rocket, ZoomIn, Copy, Sparkles,
 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,8 @@ import { TagInput } from "@/components/shared/TagInput";
 import { TagPill } from "@/components/shared/TagPill";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { CategoryPicker } from "@/components/shared/CategoryPicker";
-import { formatDate, cn } from "@/lib/utils";
+import { formatDate, cn, scoreCompuesto } from "@/lib/utils";
+import { STATUS_LABELS } from "@/lib/constants";
 import { IdeaHistoryTimeline } from "@/components/ideas/IdeaHistory";
 import { ImageUpload } from "@/components/shared/ImageUpload";
 import type { Category, IdeaHistory } from "@/types";
@@ -75,6 +76,7 @@ export function IdeaDetailClient({ idea, categories }: Props) {
   const [saving, setSaving] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [exportCopied, setExportCopied] = useState(false);
 
   const patch = async (updates: Partial<typeof data> & Record<string, unknown>) => {
     setSaving(true);
@@ -126,6 +128,46 @@ export function IdeaDetailClient({ idea, categories }: Props) {
   };
 
   const isArchived = data.status === "ARCHIVED";
+
+  const handleExport = async () => {
+    const score = scoreCompuesto(idea.scorePotential, idea.scoreEffort, idea.scoreInterest);
+    const lines: string[] = [
+      `IDEA 1 — ${data.title}`,
+      `Estado: ${STATUS_LABELS[data.status] ?? data.status} | Puntuación: ${score.toFixed(1)}/10`,
+    ];
+    if (data.description) { lines.push(""); lines.push(data.description); }
+    if (data.nextStep) { lines.push(""); lines.push(`Próximo paso: ${data.nextStep}`); }
+    if (data.imageUrl) { lines.push(""); lines.push(`Imagen adjunta: ${data.imageUrl}`); }
+    lines.push("");
+    lines.push("─".repeat(40));
+    lines.push("");
+    lines.push("Hola Claude, por favor mejora esta idea:");
+    lines.push("1. Mejora el título si es necesario");
+    lines.push("2. Desarrolla la información en secciones claras");
+    lines.push("3. Termina SIEMPRE con el próximo paso concreto");
+    lines.push("");
+    lines.push("Usa EXACTAMENTE este formato:");
+    lines.push("IDEA 1 — [Título mejorado]");
+    lines.push("Estado: [Sin realizar / Activa / En proceso]");
+    lines.push("");
+    lines.push("[Contenido desarrollado]");
+    lines.push("");
+    lines.push("Próximo paso:");
+    lines.push("[Acción concreta]");
+
+    await navigator.clipboard.writeText(lines.join("\n"));
+    setExportCopied(true);
+    setTimeout(() => setExportCopied(false), 2500);
+
+    // Marcar como exportada
+    fetch("/api/ideas/mark-exported", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: [idea.id] }),
+    }).catch(() => {});
+
+    toast.success("¡Copiado! Pégalo en Claude para mejorar la idea");
+  };
 
   return (
     <div className="space-y-6">
@@ -387,6 +429,16 @@ export function IdeaDetailClient({ idea, categories }: Props) {
           {formatDate(idea.createdAt)}
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline" size="sm"
+            className="gap-1.5 h-7 text-xs text-violet-600 border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-violet-800 dark:hover:bg-violet-950"
+            onClick={handleExport}
+          >
+            {exportCopied
+              ? <><Check className="w-3.5 h-3.5" /> ¡Copiado!</>
+              : <><Sparkles className="w-3.5 h-3.5" /> Exportar a IA</>
+            }
+          </Button>
           <Button
             variant="ghost" size="sm"
             className="gap-1.5 text-muted-foreground h-7 text-xs"
