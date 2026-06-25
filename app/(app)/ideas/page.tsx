@@ -16,7 +16,6 @@ export default async function IdeasPage({
 
   const where: Record<string, unknown> = {
     status: { not: "ARCHIVED" },
-    aiProcessedAt: null,
   };
 
   if (q) {
