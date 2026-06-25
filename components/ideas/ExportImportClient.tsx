@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Copy, Check, Sparkles, Image as ImageIcon, Calendar,
-  ClipboardPaste, ArrowRight, Loader2, CheckCircle2, AlertCircle,
+  ClipboardPaste, ArrowRight, Loader2, CheckCircle2, AlertCircle, EyeOff,
 } from "lucide-react";
 import { formatDate, scoreCompuesto } from "@/lib/utils";
 import { STATUS_LABELS } from "@/lib/constants";
@@ -75,19 +75,39 @@ export function ExportImportClient({ ideas }: Props) {
 
   // Export state
   const [copied, setCopied] = useState(false);
-  const exportText = buildExportText(ideas);
-  const hasImages = ideas.some((i) => i.imageUrl);
+  const [excluded, setExcluded] = useState<Set<string>>(new Set());
+  const [excluding, setExcluding] = useState<string | null>(null);
 
-  const markAsExported = async (showToast = false) => {
-    if (ideas.length === 0) return;
+  const visibleIdeas = ideas.filter((i) => !excluded.has(i.id));
+  const exportText = buildExportText(visibleIdeas);
+  const hasImages = visibleIdeas.some((i) => i.imageUrl);
+
+  const excludeOne = async (id: string) => {
+    setExcluding(id);
     try {
       await fetch("/api/ideas/mark-exported", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: ideas.map((i) => i.id) }),
+        body: JSON.stringify({ ids: [id] }),
+      });
+      setExcluded((prev) => new Set([...prev, id]));
+    } catch {
+      toast.error("Error al ocultar la idea");
+    } finally {
+      setExcluding(null);
+    }
+  };
+
+  const markAsExported = async (showToast = false) => {
+    if (visibleIdeas.length === 0) return;
+    try {
+      await fetch("/api/ideas/mark-exported", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: visibleIdeas.map((i) => i.id) }),
       });
       if (showToast) {
-        toast.success(`${ideas.length} ideas marcadas — ya no saldrán en el exportador`);
+        toast.success(`${visibleIdeas.length} ideas marcadas — ya no saldrán en el exportador`);
         router.refresh();
       }
     } catch {
@@ -99,7 +119,7 @@ export function ExportImportClient({ ideas }: Props) {
     await navigator.clipboard.writeText(exportText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
-    await markAsExported(false); // marca silenciosamente al copiar
+    await markAsExported(false);
   };
 
   // Import state
@@ -217,26 +237,31 @@ export function ExportImportClient({ ideas }: Props) {
       {/* ── EXPORTAR ── */}
       {tab === "export" && (
         <div className="space-y-5">
-          {ideas.length === 0 ? (
+          {visibleIdeas.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-border p-16 text-center">
               <Calendar className="w-10 h-10 mx-auto text-muted-foreground/30 mb-3" />
-              <p className="font-medium text-muted-foreground">Sin ideas esta semana</p>
+              <p className="font-medium text-muted-foreground">
+                {ideas.length === 0 ? "No hay ideas pendientes de exportar" : "Has ocultado todas las ideas"}
+              </p>
             </div>
           ) : (
             <>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">{ideas.length} ideas</span>
+                <span className="font-medium text-foreground">{visibleIdeas.length} ideas</span>
+                {excluded.size > 0 && (
+                  <span className="text-muted-foreground">{excluded.size} ocultada{excluded.size !== 1 ? "s" : ""}</span>
+                )}
                 {hasImages && (
                   <span className="flex items-center gap-1">
                     <ImageIcon className="w-3.5 h-3.5" />
-                    {ideas.filter((i) => i.imageUrl).length} con imagen
+                    {visibleIdeas.filter((i) => i.imageUrl).length} con imagen
                   </span>
                 )}
               </div>
 
               {/* Lista de ideas */}
               <div className="space-y-3">
-                {ideas.map((idea, i) => (
+                {visibleIdeas.map((idea, i) => (
                   <div key={idea.id} className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
                     <span className="text-xs font-bold text-muted-foreground/50 mt-0.5 w-5 shrink-0">{i + 1}</span>
                     <div className="flex-1 min-w-0 space-y-1">
@@ -246,6 +271,17 @@ export function ExportImportClient({ ideas }: Props) {
                     {idea.imageUrl && (
                       <Image src={idea.imageUrl} alt={idea.title} width={56} height={56} className="w-14 h-14 object-cover rounded-lg border border-border shrink-0" />
                     )}
+                    <button
+                      onClick={() => excludeOne(idea.id)}
+                      disabled={excluding === idea.id}
+                      title="No exportar esta idea"
+                      className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0"
+                    >
+                      {excluding === idea.id
+                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : <EyeOff className="w-4 h-4" />
+                      }
+                    </button>
                   </div>
                 ))}
               </div>
